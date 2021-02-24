@@ -20,7 +20,7 @@ foreach ($task in ($tasks | select Name)) {
    $trigger =  New-ScheduledTaskTrigger -Daily -At 6pm
    $description = "Sets Chrome Remote Desktop (chromoting service) back to Automatic startup"
    Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "CRD Fixer" -Description $description -User "NT AUTHORITY\SYSTEM"
-   $settings = New-ScheduledTaskSettingsSet –AllowStartIfOnBatteries –DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
+   $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
    Set-ScheduledTask -TaskName "CRD Fixer" -Settings $settings 
    Start-ScheduledTask -TaskName "CRD Fixer"
 }
