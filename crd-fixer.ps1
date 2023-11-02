@@ -29,11 +29,17 @@ if ($enableLogging) {
 $schedule = New-Object -ComObject Schedule.Service
 $schedule.Connect()
 $tasks = $schedule.GetFolder("\").GetTasks(0)
-$doesCRDFixerTaskExist = $tasks.Name -contains "CRD Fixer"
+$doesCRDFixerTaskExist = $tasks | Where-Object { $_.Name -eq "CRD Fixer" }
+
+$doesCRDFixerTaskExist = [bool]$doesCRDFixerTaskExist
 
 # Install CRD Fixer task if it doesn't exist
+if ($doesCRDFixerTaskExist) {
+    Write-Host "CRD Fixer already installed. Delete from Task Scheduler if you want to re-install." -ForegroundColor "Red"
+}
+
 if (-not $doesCRDFixerTaskExist) {
-    $action = New-ScheduledTaskAction -Execute powershell.exe -Argument "-ExecutionPolicy RemoteSigned ""`$crd='chromoting';if((Get-Service `$crd).StartType -ne 'Disabled'){Set-Service `$crd -StartupType Automatic;Start-Service `$crd}""" -WorkingDirectory %SystemRoot%
+   $action = New-ScheduledTaskAction -Execute powershell.exe -Argument "-ExecutionPolicy RemoteSigned ""`$crd='chromoting';if((Get-Service `$crd).StartType -ne 'Disabled'){Set-Service `$crd -StartupType Automatic;Start-Service `$crd}""" -WorkingDirectory %SystemRoot%
     $trigger = New-ScheduledTaskTrigger -Daily -At 6pm
     $description = "Sets Chrome Remote Desktop (chromoting service) back to Automatic startup"
     
@@ -43,15 +49,8 @@ if (-not $doesCRDFixerTaskExist) {
     Set-ScheduledTask -TaskName "CRD Fixer" -Settings $settings 
     Start-ScheduledTask -TaskName "CRD Fixer"
 
-    Write-Host "CRD Fixer task installed."
-}
-
-# Provide user feedback
-if ($doesCRDFixerTaskExist) {
-    Write-Host "CRD Fixer already installed. Delete from Task Scheduler if you want to re-install." -ForegroundColor "Red"
-} else {
-    Write-Host "CRD Fixer successfully installed." -ForegroundColor "Green"
-}
+    Write-Host "CRD Fixer task installed." -ForegroundColor "Green"
+    }
 
 # Stop Logging
 if ($enableLogging) {
